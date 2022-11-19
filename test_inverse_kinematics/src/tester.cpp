@@ -16,7 +16,7 @@ class Tester : public rclcpp::Node
     : Node("tester"), count_(0)
     {
         publisher_ = this->create_publisher<std_msgs::msg::String>("tester_topic", 10);
-        timer_ = this->create_wall_timer(500ms, std::bind(&Tester::timer_callback, this));
+        timer_ = this->create_wall_timer(100ms, std::bind(&Tester::timer_callback, this));
     }
 
     private:
@@ -28,11 +28,12 @@ class Tester : public rclcpp::Node
     };
     const float base_frame_height_ = 0.5;
     const float distance_between_hip_joints_ = 0;
-
-    Eigen::VectorXf q_0 = Eigen::Matrix<float,12,1>::Zero();
+    Eigen::VectorXf q_pos = Eigen::Vector<float,18>::Zero();
+    Eigen::VectorXf q_0 = Eigen::Matrix<float,18,1>::Zero();
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
     size_t count_;
+    int counter = 0;
     
     void timer_callback()
     {
@@ -43,14 +44,18 @@ class Tester : public rclcpp::Node
         auto message = std_msgs::msg::String();
         InverseKinematics IK = InverseKinematics(body_dimensions_, leg_dimensions_, base_frame_height_, distance_between_hip_joints_);
         Eigen::VectorXf q_dot = IK.inverse_kinematics(q_0, I_r_IE_des, stationary_feet, body_orientation, Eigen::Matrix3f::Zero());
-        //q_0 = q_dot;
-
+        if (counter < 100)
+        {
+            q_pos = q_pos + q_dot*0.1;
+            q_0 = q_pos;
+        }
+        counter++;
         message.data = "q_dot: \n";
         int counter = 0;
         for (int i = 0; i < 18; i++) 
         {
             counter++;
-            message.data += std::to_string(q_dot(i)) + "\n";
+            message.data += std::to_string(q_pos(i)) + "\n";
             if (counter == 3)
             {
                 message.data += "\n";

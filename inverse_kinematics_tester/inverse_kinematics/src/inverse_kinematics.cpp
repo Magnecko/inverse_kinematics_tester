@@ -131,7 +131,8 @@ Eigen::Matrix4f InverseKinematics::get_transform_IB(Eigen::VectorXf q, const Eig
     }
 
     // relative vector from B to I frame in B frame coordinates
-    Eigen::Vector3f B_r_BI = 1/3 * (foot_positions(Eigen::seq(0,2), 0) + foot_positions(Eigen::seq(0,2), 1) + foot_positions(Eigen::seq(0,2), 2));
+    Eigen::Vector3f test = foot_positions.block<3,1>(0,0) + foot_positions.block<3,1>(0,1) + foot_positions.block<3,1>(0,2);
+    Eigen::Vector3f B_r_BI = 0.333333333 * (foot_positions.block<3,1>(0,0) + foot_positions.block<3,1>(0,1) + foot_positions.block<3,1>(0,2));
 
     // calculate homogeneous transformation from B to I frame
     Eigen::Matrix4f T_BI = homog_transform(B_r_BI(0), B_r_BI(1), B_r_BI(2), body_orientation(0), body_orientation(1), body_orientation(2));
@@ -211,7 +212,7 @@ Eigen::VectorXf InverseKinematics::inverse_kinematics(Eigen::VectorXf q_0, Eigen
     {
         // Transformation matrix from I to B
         Eigen::Matrix4f T_IB = InverseKinematics::get_transform_IB(q, body_orientation, stationary_feet);
-        Eigen::Matrix3f C_IB = T_IB(Eigen::seq(0,2), Eigen::seq(0,2));
+        Eigen::Matrix3f C_IB = T_IB.block<3,3>(0,0);
 
         // Calculate all the jacobian needed
         // // FL
@@ -286,25 +287,25 @@ Eigen::VectorXf InverseKinematics::inverse_kinematics(Eigen::VectorXf q_0, Eigen
 
         if (stationary_feet.at(0) == 1)
         {
-            I_r_IE = find_base_to_foot_vector(q(Eigen::seq(0,2)), hip_yaw_locations_(Eigen::seq(0,2), 0));
+            I_r_IE = find_base_to_foot_vector(q(Eigen::seq(0,2)), hip_yaw_locations_.block<3,1>(0,0));
             dr.head(3) = I_r_IE_des - I_r_IE;
         }
         else if (stationary_feet.at(1) == 1)
         {
-            I_r_IE = find_base_to_foot_vector(q(Eigen::seq(3,5)), hip_yaw_locations_(Eigen::seq(0,2),1));
+            I_r_IE = find_base_to_foot_vector(q.segment(3,5), hip_yaw_locations_.block<3,1>(0,1));
             dr.segment(3,5) = I_r_IE_des - I_r_IE;
         }
         else if (stationary_feet.at(2) == 1)
         {
-            I_r_IE = find_base_to_foot_vector(q(Eigen::seq(5,8)), hip_yaw_locations_(Eigen::seq(0,2),2));
+            I_r_IE = find_base_to_foot_vector(q(Eigen::seq(5,8)), hip_yaw_locations_.block<3,1>(0,2));
             dr.segment(6,8) = I_r_IE_des - I_r_IE;
         }
         else if (stationary_feet.at(3) == 1)
         {
-            I_r_IE = find_base_to_foot_vector(q(Eigen::seq(9,11)), hip_yaw_locations_(Eigen::seq(0,2),3));
+            I_r_IE = find_base_to_foot_vector(q(Eigen::seq(9,11)), hip_yaw_locations_.block<3,1>(0,3));
             dr.tail(3) = I_r_IE_des - I_r_IE;
         }
-        
+        std::cout << dr << std::endl;
         // Kinematic controller
         // // Controller gain
         float kp = 5;
@@ -314,7 +315,6 @@ Eigen::VectorXf InverseKinematics::inverse_kinematics(Eigen::VectorXf q_0, Eigen
 
         // // Pseudo Inverse of I_Jp
         Eigen::MatrixXf I_Jp_pinv = I_Jp.completeOrthogonalDecomposition().pseudoInverse();
-
         // // Null space projection 
         Eigen::MatrixXf N = Eigen::Matrix<float, 18, 18>::Identity() - I_Jp_pinv*I_Jp;
 
@@ -323,7 +323,8 @@ Eigen::VectorXf InverseKinematics::inverse_kinematics(Eigen::VectorXf q_0, Eigen
         I_v_command = I_v_IE_des + kp*dr;
         Eigen::MatrixXf temp = I_Jp_B * N;
 
-        q_dot = I_Jp_pinv * I_v_command + N * temp.completeOrthogonalDecomposition().pseudoInverse() * (-I_Jp_B*I_Jp_pinv * I_v_command);
+        q_dot = I_Jp_pinv * I_v_command + N * temp.completeOrthogonalDecomposition().pseudoInverse() * (-1*I_Jp_B*I_Jp_pinv * I_v_command);
     }
+
     return q_dot;
 }
