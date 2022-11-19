@@ -1,0 +1,52 @@
+/*
+ *  Transformations.hpp
+ *  Author: Frigi
+ */
+
+#pragma once
+#include <eigen3/Eigen/Core>
+
+#define PI 3.1415926535897
+
+// Quaternion struct 
+struct Quaternion 
+{
+        double w, x, y, z;
+};
+
+// Euler angles struct
+struct EulerAngles
+{
+        double roll, pitch, yaw;
+};
+
+// Rotation around the x axis
+Eigen::Matrix3f rotx(float alpha);
+
+// Rotation around the y axis
+Eigen::Matrix3f roty(float beta);
+
+// Rotation around the z axis
+Eigen::Matrix3f rotz(float gamma);
+
+// Rotation around the x axis -> y axis -> z axis
+Eigen::Matrix3f rotxyz(float alpha, float beta, float gamma);
+
+// Transformation along the x, y and z axis
+Eigen::Matrix4f homog_transxyz(float dx, float dy, float dz);
+
+// 4x4 general transformation matrix
+Eigen::Matrix4f homog_transform(float dx, float dy, float dz, 
+        float alpha, float beta, float gamma);
+
+// Inverse of a general 4x4 transformation matrix
+Eigen::Matrix4f homog_transform_inverse(Eigen::Matrix4f matrix);
+
+// Implement quaternion to euler angle function
+EulerAngles toEulerAngles(Quaternion q);
+
+// Euler angles to quaternion
+Quaternion toQuaternion(EulerAngles e);
+
+// Calculate skew matrix
+Eigen::Matrix3f skew_matrix(Eigen::Vector3f B_r_BQ);

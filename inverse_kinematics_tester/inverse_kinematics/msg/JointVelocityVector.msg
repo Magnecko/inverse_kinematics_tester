@@ -1,0 +1,4 @@
+geometry_msg/vector3 q_dot_FL
+geometry_msg/vector3 q_dot_FR
+geometry_msg/vector3 q_dot_BR
+geometry_msg/vector3 q_dot_BL
