@@ -325,6 +325,5 @@ Eigen::VectorXf InverseKinematics::inverse_kinematics(Eigen::VectorXf q_0, Eigen
 
         q_dot = I_Jp_pinv * I_v_command + N * temp.completeOrthogonalDecomposition().pseudoInverse() * (-I_Jp_B*I_Jp_pinv * I_v_command);
     }
-    std::cout << q_dot;
     return q_dot;
 }
