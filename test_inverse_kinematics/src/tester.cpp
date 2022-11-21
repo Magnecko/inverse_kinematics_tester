@@ -6,6 +6,7 @@
 #include "std_msgs/msg/string.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "inverse_kinematics/inverse_kinematics.hpp"
+#define PI 3.1415926
 
 using namespace std::chrono_literals;
 
@@ -17,6 +18,7 @@ class Tester : public rclcpp::Node
     {
         publisher_ = this->create_publisher<std_msgs::msg::String>("tester_topic", 10);
         timer_ = this->create_wall_timer(100ms, std::bind(&Tester::timer_callback, this));
+        std::cout << q_0;
     }
 
     private:
@@ -29,24 +31,26 @@ class Tester : public rclcpp::Node
     const float base_frame_height_ = 0.5;
     const float distance_between_hip_joints_ = 0;
     Eigen::VectorXf q_pos = Eigen::Vector<float,18>::Zero();
-    Eigen::VectorXf q_0 = Eigen::Matrix<float,18,1>::Zero();
+    Eigen::VectorXf q_0 = Eigen::Vector<float,18>::Zero();
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
     size_t count_;
     int counter = 0;
+    InverseKinematics IK = InverseKinematics(body_dimensions_, leg_dimensions_, base_frame_height_, distance_between_hip_joints_);
     
     void timer_callback()
     {
         Eigen::Vector3f I_r_IE_des = {0, -1, -2};
-        vector<int> stationary_feet = {1,0,0,0};
+        vector<int> stationary_feet = {0,0,1,0};
         Eigen::Vector3f body_orientation = Eigen::Vector3f::Zero();
         
         auto message = std_msgs::msg::String();
-        InverseKinematics IK = InverseKinematics(body_dimensions_, leg_dimensions_, base_frame_height_, distance_between_hip_joints_);
+        
         Eigen::VectorXf q_dot = IK.inverse_kinematics(q_0, I_r_IE_des, stationary_feet, body_orientation, Eigen::Matrix3f::Zero());
         if (counter < 100)
         {
             q_pos = q_pos + q_dot*0.1;
+            
             q_0 = q_pos;
         }
         counter++;
