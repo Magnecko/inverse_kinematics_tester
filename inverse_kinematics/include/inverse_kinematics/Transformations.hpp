@@ -21,26 +21,26 @@ struct EulerAngles
 };
 
 // Rotation around the x axis
-Eigen::Matrix3f rotx(float alpha);
+Eigen::Matrix3d rotx(double alpha);
 
 // Rotation around the y axis
-Eigen::Matrix3f roty(float beta);
+Eigen::Matrix3d roty(double beta);
 
 // Rotation around the z axis
-Eigen::Matrix3f rotz(float gamma);
+Eigen::Matrix3d rotz(double gamma);
 
 // Rotation around the x axis -> y axis -> z axis
-Eigen::Matrix3f rotxyz(float alpha, float beta, float gamma);
+Eigen::Matrix3d rotxyz(double alpha, double beta, double gamma);
 
 // Transformation along the x, y and z axis
-Eigen::Matrix4f homog_transxyz(float dx, float dy, float dz);
+Eigen::Matrix4d homog_transxyz(double dx, double dy, double dz);
 
 // 4x4 general transformation matrix
-Eigen::Matrix4f homog_transform(float dx, float dy, float dz, 
-        float alpha, float beta, float gamma);
+Eigen::Matrix4d homog_transform(double dx, double dy, double dz, 
+        double alpha, double beta, double gamma);
 
-// Inverse of a general 4x4 transformation matrix
-Eigen::Matrix4f homog_transform_inverse(Eigen::Matrix4f matrix);
+// Inverse od a general 4x4 transdormation matrix
+Eigen::Matrix4d homog_transform_inverse(Eigen::Matrix4d matrix);
 
 // Implement quaternion to euler angle function
 EulerAngles toEulerAngles(Quaternion q);
@@ -49,4 +49,4 @@ EulerAngles toEulerAngles(Quaternion q);
 Quaternion toQuaternion(EulerAngles e);
 
 // Calculate skew matrix
-Eigen::Matrix3f skew_matrix(Eigen::Vector3f B_r_BQ);
+Eigen::Matrix3d skew_matrix(Eigen::Vector3d B_r_BQ);
