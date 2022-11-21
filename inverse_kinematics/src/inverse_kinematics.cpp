@@ -131,7 +131,6 @@ Eigen::Matrix4f InverseKinematics::get_transform_IB(Eigen::VectorXf q, const Eig
     }
 
     // relative vector from B to I frame in B frame coordinates
-    Eigen::Vector3f test = foot_positions.block<3,1>(0,0) + foot_positions.block<3,1>(0,1) + foot_positions.block<3,1>(0,2);
     Eigen::Vector3f B_r_BI = 0.333333333 * (foot_positions.block<3,1>(0,0) + foot_positions.block<3,1>(0,1) + foot_positions.block<3,1>(0,2));
 
     // calculate homogeneous transformation from B to I frame
@@ -287,22 +286,22 @@ Eigen::VectorXf InverseKinematics::inverse_kinematics(Eigen::VectorXf q_0, Eigen
 
         if (stationary_feet.at(0) == 1)
         {
-            I_r_IE = find_base_to_foot_vector(q(Eigen::seq(0,2)), hip_yaw_locations_.block<3,1>(0,0));
+            I_r_IE = find_base_to_foot_vector(q.segment(0,3), hip_yaw_locations_.block<3,1>(0,0));
             dr.head(3) = I_r_IE_des - I_r_IE;
         }
         else if (stationary_feet.at(1) == 1)
         {
-            I_r_IE = find_base_to_foot_vector(q.segment(3,5), hip_yaw_locations_.block<3,1>(0,1));
-            dr.segment(3,5) = I_r_IE_des - I_r_IE;
+            I_r_IE = find_base_to_foot_vector(q.segment(3,3), hip_yaw_locations_.block<3,1>(0,1));
+            dr.segment(3,3) = I_r_IE_des - I_r_IE;
         }
         else if (stationary_feet.at(2) == 1)
         {
-            I_r_IE = find_base_to_foot_vector(q(Eigen::seq(5,8)), hip_yaw_locations_.block<3,1>(0,2));
-            dr.segment(6,8) = I_r_IE_des - I_r_IE;
+            I_r_IE = find_base_to_foot_vector(q.segment(6,3), hip_yaw_locations_.block<3,1>(0,2));
+            dr.segment(6, 3) = I_r_IE_des - I_r_IE;
         }
         else if (stationary_feet.at(3) == 1)
         {
-            I_r_IE = find_base_to_foot_vector(q(Eigen::seq(9,11)), hip_yaw_locations_.block<3,1>(0,3));
+            I_r_IE = find_base_to_foot_vector(q.segment(9,3), hip_yaw_locations_.block<3,1>(0,3));
             dr.tail(3) = I_r_IE_des - I_r_IE;
         }
         std::cout << dr << std::endl;

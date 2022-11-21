@@ -1,0 +1,176 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="default">
+
+    <physics type="ode">
+      <ode>
+        <solver>
+          <type>quick</type>
+        </solver>
+        <constraints>
+      </constraints>
+      </ode>
+    </physics>
+
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!--ground plane-->
+    <model name="obstacles">
+    <pose>0 0 0 0 0 0</pose>
+    <static>true</static>
+
+    <link name="f_ground">
+    <pose>0 0 -0.25 0 -1.5708 0</pose>
+      <inertial>
+        <mass>100.0</mass>
+      </inertial>
+      <surface>
+        <friction>
+           <ode>
+            <mu>0.01</mu>
+            <mu2>0.01</mu2>
+          </ode>
+        </friction>
+      </surface>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.5 5 5.5</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <material>
+          <script>
+            <name>Gazebo/Grey</name>
+          </script>
+        </material>
+        <geometry>
+          <box>
+            <size>0.5 5 5.5</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+
+    <link name="f_wall_1">
+    <pose>2.5 0 2.5 0 0 3.14159</pose>
+      <inertial>
+        <mass>100.0</mass>
+      </inertial>
+      <surface>
+        <friction>
+           <ode>
+            <mu>0.01</mu>
+            <mu2>0.01</mu2>
+          </ode>
+        </friction>
+      </surface>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.5 5 5</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+      <material>
+          <script>
+            <name>Gazebo/Grey</name>
+          </script>
+        </material>
+        <geometry>
+          <box>
+            <size>0.5 5 5</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+
+    <link name="f_wall_2">
+    <pose>-2.5 0 2.5 0 0 -3.14159</pose>
+      <inertial>
+        <mass>100.0</mass>
+      </inertial>
+      <surface>
+        <friction>
+           <ode>
+            <mu>0.01</mu>
+            <mu2>0.01</mu2>
+          </ode>
+        </friction>
+      </surface>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.5 5 5</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+      <material>
+          <script>
+            <name>Gazebo/Grey</name>
+          </script>
+        </material>
+        <geometry>
+          <box>
+            <size>0.5 5 5</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="f_ceiling">
+    <pose>0 0 5.25 0 1.5708 0</pose>
+      <inertial>
+        <mass>100.0</mass>
+      </inertial>
+      <surface>
+        <friction>
+           <ode>
+            <mu>0.01</mu>
+            <mu2>0.01</mu2>
+          </ode>
+        </friction>
+      </surface>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.5 5 5.5</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+      <material>
+          <script>
+            <name>Gazebo/Grey</name>
+          </script>
+        </material>
+        <geometry>
+          <box>
+            <size>0.5 5 5.5</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+
+
+
+  </model>
+
+
+
+
+
+
+
+
+  </world>
+</sdf>

@@ -1,0 +1,121 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000 #Hz
+    use_sim_time: true
+
+    # joint_trajectory_controller:
+    #   type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    magnecko_state_estimation:
+      type: magnecko_state_estimation/StateEstimation
+
+    # magnorris_kinematic_controller:
+    #   type: magnorris_kinematic_controller/MagnorrisKinematicController
+
+
+####################################################
+################## ATTENTION #######################
+#  The order of the joints, state_interfaces and   #
+#  imu_state_interfaces should not be changed!!!   #
+####################################################
+magnecko_state_estimation:
+  ros__parameters:
+    joints:
+      - first_arm_yaw
+      - first_arm_pitch
+      - first_knee_joint
+      - second_arm_yaw
+      - second_arm_pitch
+      - second_knee_joint
+      - third_arm_yaw
+      - third_arm_pitch
+      - third_knee_joint
+      - fourth_arm_yaw
+      - fourth_arm_pitch
+      - fourth_knee_joint
+
+    state_interfaces:
+      - position
+      - velocity
+
+    imu_name: imu_sensor
+
+    imu_state_interfaces:
+      - orientation.x
+      - orientation.y
+      - orientation.z
+      - orientation.w
+      - angular_velocity.x
+      - angular_velocity.y
+      - angular_velocity.z
+      - linear_acceleration.x
+      - linear_acceleration.y
+      - linear_acceleration.z
+
+    length_lower_leg: 0.2
+
+
+# joint_trajectory_controller:
+#   ros__parameters:
+#     joints:
+#       - first_arm_yaw
+#       - first_arm_pitch
+#       - first_knee_joint
+#       - second_arm_yaw
+#       - second_arm_pitch
+#       - second_knee_joint
+#       - third_arm_yaw
+#       - third_arm_pitch
+#       - third_knee_joint
+#       - fourth_arm_yaw
+#       - fourth_arm_pitch
+#       - fourth_knee_joint
+
+#     interface_name: position
+#     command_interfaces:
+#       - position
+#     state_interfaces:
+#       - position
+# #      - velocity
+
+#     state_publish_rate: 100.0 # Defaults to 50
+#     action_monitor_rate: 40.0 # Defaults to 20
+
+#     gains:
+#       p: 0.01
+#       i: 0.01
+#       d: 0.00
+
+#     allow_partial_joints_goal: false # Defaults to false
+#     open_loop_control: true
+#     allow_integration_in_goal_trajectories: true
+#     constraints:
+#       stopped_velocity_tolerance: 0.1 # Defaults to 0.01
+#       goal_time: 0.0 # Defaults to 0.0 (start immediately)
+
+
+# magnorris_kinematic_controller:
+#   ros__parameters:
+#     joints:
+#       - second_arm_yaw
+#       - second_arm_pitch
+#       - second_knee_joint
+#       - first_arm_yaw
+#       - first_arm_pitch
+#       - first_knee_joint
+#       - third_arm_yaw
+#       - third_arm_pitch
+#       - third_knee_joint
+#       - fourth_arm_yaw
+#       - fourth_arm_pitch
+#       - fourth_knee_joint
+
+#     interface_name: velocity
+#     command_interfaces:
+#       - position
+      
+#     state_interfaces:
+#       - position

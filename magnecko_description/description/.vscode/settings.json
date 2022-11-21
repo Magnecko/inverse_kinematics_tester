@@ -1,0 +1,12 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/stefan/Documents/magnorris/magnorris/install/ros2_control_test_nodes/lib/python3.10/site-packages",
+        "/home/stefan/Documents/magnorris/magnorris/install/pi_servo_pkg/lib/python3.10/site-packages",
+        "/home/stefan/Documents/magnorris/magnorris/install/magnorris_controllers_test_nodes/lib/python3.10/site-packages",
+        "/home/stefan/Documents/magnorris/magnorris/install/joystick_ros2/lib/python3.10/site-packages",
+        "/home/stefan/Documents/magnorris/magnorris/install/joint_state_controller_simulation/lib/python3.10/site-packages",
+        "/home/stefan/Documents/magnorris/magnorris/install/arduino_communication/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}

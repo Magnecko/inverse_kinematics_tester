@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="magnorris_gazebo">
+
+
+        <xacro:arg name="mu1" default="0.0" />
+        <xacro:arg name="mu2" default="0.0" />
+
+        <!-- ros_control plugin -->
+        <gazebo>
+            <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+                <parameters>$(find magnecko_description)/config/magnecko_controller.yaml</parameters>
+                <controlPeriod>100</controlPeriod>
+            </plugin>
+        </gazebo>
+
+
+        <gazebo reference="chassis">
+            <must_be_base_link>True</must_be_base_link>
+            <mu1>0.5</mu1>
+            <mu2>0.5</mu2>
+            <material>Gazebo/White</material>
+        </gazebo>
+
+        <gazebo reference="first_arm">
+            <mu1>0.0</mu1>
+            <mu2>0.0</mu2>
+            <material>Gazebo/Blue</material>
+        </gazebo>
+
+        <gazebo reference="first_knee">
+            <mu1>0.0</mu1>
+            <mu2>0.0</mu2>
+            <material>Gazebo/White</material>
+        </gazebo>
+
+        <gazebo reference="second_arm">
+            <mu1>0.0</mu1>
+            <mu2>0.0</mu2>
+            <material>Gazebo/Blue</material>
+        </gazebo>
+
+        <gazebo reference="second_knee">
+            <mu1>0.0</mu1>
+            <mu2>0.0</mu2>
+            <material>Gazebo/White</material>
+        </gazebo>
+
+        <gazebo reference="third_arm">
+            <mu1>0.0</mu1>
+            <mu2>0.0</mu2>
+            <material>Gazebo/Blue</material>
+        </gazebo>
+
+        <gazebo reference="third_knee">
+            <mu1>0.0</mu1>
+            <mu2>0.0</mu2>
+            <material>Gazebo/White</material>
+        </gazebo>
+
+        <gazebo reference="fourth_arm">
+            <mu1>0.0</mu1>
+            <mu2>0.0</mu2>
+            <material>Gazebo/Blue</material>
+        </gazebo>
+
+        <gazebo reference="fourth_knee">
+            <mu1>0.0</mu1>
+            <mu2>0.0</mu2>
+            <material>Gazebo/White</material>
+        </gazebo>
+
+        <gazebo reference="first_foot">
+            <collision>
+                <surface>
+                    <friction>
+                        <ode>
+                            <mu>0.845</mu>
+                            <mu2>0.845</mu2>
+                        </ode>
+                    </friction>
+                </surface>
+            </collision>
+            <material>Gazebo/White</material>
+        </gazebo>
+
+        <gazebo reference="second_foot">
+            <collision>
+                <surface>
+                    <friction>
+                        <ode>
+                            <mu>0.845</mu>
+                            <mu2>0.845</mu2>
+                        </ode>
+                    </friction>
+                </surface>
+            </collision>
+            <material>Gazebo/White</material>
+        </gazebo>
+
+        <gazebo reference="third_foot">
+            <collision>
+                <surface>
+                    <friction>
+                        <ode>
+                            <mu>0.845</mu>
+                            <mu2>0.845</mu2>
+                        </ode>
+                    </friction>
+                </surface>
+            </collision>
+            <material>Gazebo/White</material>
+        </gazebo>
+
+        <gazebo reference="fourth_foot">
+            <collision>
+                <surface>
+                    <friction>
+                        <ode>
+                            <mu>0.845</mu>
+                            <mu2>0.845</mu2>
+                        </ode>
+                    </friction>
+                </surface>
+            </collision>
+            <material>Gazebo/White</material>
+        </gazebo>
+
+        <gazebo reference="first_arm_yaw">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="first_arm_pitch">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="first_knee_joint">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="second_arm_yaw">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="second_arm_pitch">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="second_knee_joint">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="third_arm_yaw">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="third_arm_pitch">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="third_knee_joint">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="fourth_arm_yaw">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="fourth_arm_pitch">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <gazebo reference="fourth_knee_joint">
+            <implicitSpringDamper>True</implicitSpringDamper>
+        </gazebo>
+
+        <!-- IMU sensor -->
+        <gazebo reference="chassis">
+            <gravity>true</gravity>
+            <sensor name="imu_sensor" type="imu">
+            <always_on>true</always_on>
+            <update_rate>100</update_rate>
+            <visualize>true</visualize>
+            <topic>__default_topic__</topic>
+            <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                <topicName>imu</topicName>
+                <bodyName>chassis</bodyName>
+                <updateRateHZ>100.0</updateRateHZ>
+                <gaussianNoise>0.0</gaussianNoise>
+                <xyzOffset>0 0 0</xyzOffset>
+                <rpyOffset>0 0 0</rpyOffset>
+                <frameName>imu_link</frameName>
+                <initialOrientationAsReference>false</initialOrientationAsReference>
+            </plugin>
+            <pose>0 0 0 0 0 0</pose>
+            </sensor>
+        </gazebo>
+
+        <!--Foot plugin-->
+        <gazebo>
+            <plugin name="gazebo_magnetic_foot_FL" filename="libgazebo_magnetic_foot.so">
+                <bodyName>first_foot</bodyName>
+                <topicName>MagFootTopic</topicName>
+                <serviceName>MagFootServiceFL</serviceName>
+                <AdhesionForce>280</AdhesionForce>
+                <GripperThickness>${foot_thickness}</GripperThickness>
+            </plugin>
+        </gazebo>
+
+        <gazebo>
+            <plugin name="gazebo_magnetic_foot_FR" filename="libgazebo_magnetic_foot.so">
+                <bodyName>second_foot</bodyName>
+                <topicName>MagFootTopic</topicName>
+                <serviceName>MagFootServiceFR</serviceName>
+                <AdhesionForce>280</AdhesionForce>
+                <GripperThickness>${foot_thickness}</GripperThickness>
+            </plugin>
+        </gazebo>
+
+        <gazebo>
+            <plugin name="gazebo_magnetic_foot_BR" filename="libgazebo_magnetic_foot.so">
+                <bodyName>third_foot</bodyName>
+                <topicName>MagFootTopic</topicName>
+                <serviceName>MagFootServiceBR</serviceName>
+                <AdhesionForce>280</AdhesionForce>
+                <GripperThickness>${foot_thickness}</GripperThickness>
+            </plugin>
+        </gazebo>
+
+        <gazebo>
+            <plugin name="gazebo_magnetic_foot_BL" filename="libgazebo_magnetic_foot.so">
+                <bodyName>fourth_foot</bodyName>
+                <topicName>MagFootTopic</topicName>
+                <serviceName>MagFootServiceBL</serviceName>
+                <AdhesionForce>280</AdhesionForce>
+                <GripperThickness>${foot_thickness}</GripperThickness>
+            </plugin>
+        </gazebo>
+
+
+    </xacro:macro>
+
+
+</robot>

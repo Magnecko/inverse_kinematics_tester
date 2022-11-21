@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/stefan/Documents/magnorris/magnorris/install/ros2_control_demo_hardware/include/**",
+        "/home/stefan/Documents/magnorris/magnorris/install/magnorris_hardware/include/**",
+        "/home/stefan/Documents/magnorris/magnorris/install/gazebo_ros2_control/include/**",
+        "/opt/ros/humble/include/**",
+        "/home/stefan/Documents/magnorris/magnorris/src/gazebo_ros2_control/gazebo_ros2_control/include/**",
+        "/home/stefan/Documents/magnorris/magnorris/src/magnorris_hardware/include/**",
+        "/home/stefan/Documents/magnorris/magnorris/src/ros2_control_demos/ros2_control_demo_hardware/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

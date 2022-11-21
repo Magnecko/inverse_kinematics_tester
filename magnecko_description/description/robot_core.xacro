@@ -1,0 +1,841 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+    <xacro:include filename="inertial_macros.xacro"/>
+
+    <!--dimensions-->
+    <xacro:property name="length_body" value="0.20" />
+    <xacro:property name="width_body" value="0.20" />
+    <xacro:property name="height_body" value="0.10" />
+    <xacro:property name="length_upper_leg" value="0.20" />
+    <xacro:property name="length_lower_leg" value="0.09" />
+    <xacro:property name="length_foot_yaw" value="0.05" />
+    <xacro:property name="radius_upper_leg" value="0.02" />
+    <xacro:property name="radius_lower_leg" value="0.02" />
+    <xacro:property name="radius_joint" value="0.025" />
+    <xacro:property name="radius_foot_joint" value="0.015" /> 
+    <xacro:property name="foot_thickness" value="0.03" />
+    <xacro:property name="foot_length" value="0.07" />
+    <xacro:property name="foot_width" value="0.07" />
+    <!--mass-->
+    <xacro:property name="mass_body" value="0.70" />
+    <xacro:property name="mass_upper_leg" value="0.40" />
+    <xacro:property name="mass_lower_leg" value="0.4" />
+    <xacro:property name="mass_hip_joint" value="0.5" />
+    <xacro:property name="mass_foot_yaw" value="0.2" />
+    <xacro:property name="mass_foot_roll" value="0.2" />
+    <xacro:property name="mass_foot" value="1.0" />
+    <!--joint properties-->
+    <xacro:property name="joint_effort" value="200.0" />
+    <xacro:property name="joint_velocity" value="1.0" />
+    <xacro:property name="joint_damping" value="0.8" />
+    <xacro:property name="joint_friction" value="0.0" />
+
+
+    <!-- BASE LINK -->
+    <!-- <link name="world">
+    </link> -->
+
+    <!-- <link name="world">
+    </link> -->
+
+
+    <!-- CHASSIS LINK -->
+
+
+    <!-- <joint name="chassis_joint" type="fixed">
+        <parent link="world"/>
+        <child link="chassis"/>
+        <origin xyz="0 0 ${1+height_body / 2}"/>
+    </joint> -->
+
+
+    <link name="chassis">
+        <visual>
+            <origin xyz="0 0 0"/>
+            <geometry>
+                <box size="${length_body} ${width_body} ${height_body}"/>
+            </geometry>
+            <material name="white"/>
+        </visual>
+
+        <collision>
+            <origin xyz="0 0 0"/>
+            <geometry>
+                <box size="${length_body*0.95 - 2*radius_joint} ${width_body*0.95 - 2*radius_joint} ${height_body}"/>
+            </geometry>
+            <surface>
+      <contact>
+          <ode>
+            <kp>1e15</kp>
+            <kd>1e13</kd>
+          </ode>
+        </contact>
+    </surface>
+        </collision>
+
+        <xacro:inertial_box mass="${mass_body}" x="${length_body}" y="${width_body}" z="${height_body}">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+
+    
+
+    <!-- First Arm -->
+
+    <joint name="first_arm_yaw" type="revolute">
+        <parent link="chassis"/>
+        <child link="first_arm_link"/>
+        <origin xyz="${length_body/2} ${width_body/2} 0" rpy="0 0 ${pi/4}" />
+        <axis xyz="0 0 1"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="first_arm_link">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_joint}" />
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_joint}" />
+            </geometry>
+        </collision>
+
+        <xacro:inertial_sphere mass="${mass_hip_joint}" radius="${radius_joint}">
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <joint name="first_arm_pitch" type="revolute">
+        <parent link="first_arm_link"/>
+        <child link="first_arm"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="first_arm">
+        <visual>
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_upper_leg}" length="${length_upper_leg}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_upper_leg}" length="${length_upper_leg - 2.2*radius_joint}"/>
+            </geometry>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_upper_leg}" length="${length_upper_leg}" radius="${radius_upper_leg}">
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="first_knee_joint" type="revolute">
+        <parent link="first_arm"/>
+        <child link="first_knee"/>
+        <origin xyz="${length_upper_leg} 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="first_knee">
+        <visual>
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_lower_leg}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_lower_leg}"/>
+            </geometry>
+            <material name="green"/>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_lower_leg}" length="${length_lower_leg}" radius="${radius_lower_leg}">
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+   <joint name="first_ankle_yaw_joint" type="revolute">
+        <parent link="first_knee"/>
+        <child link="first_ankle_yaw"/>
+        <origin xyz="${length_lower_leg} 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="1 0 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="first_ankle_yaw">
+        <visual>
+            <origin xyz="${length_foot_yaw/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_foot_yaw}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${0.05/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_foot_yaw}"/>
+            </geometry>
+            <material name="green"/>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_foot_yaw}" length="${length_foot_yaw}" radius="${radius_lower_leg}">
+            <origin xyz="${length_foot_yaw/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    
+    <joint name="first_ankle_roll_joint" type="revolute">
+        <parent link="first_ankle_yaw"/>
+        <child link="first_ankle_roll"/>
+        <origin xyz="${length_foot_yaw + radius_foot_joint} 0 0" rpy="0 0 0" />
+        <axis xyz="0 0 1"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="first_ankle_roll">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_foot_joint}" />
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${0.9 * radius_foot_joint}" />
+            </geometry>
+        </collision>
+
+        <xacro:inertial_sphere mass="${mass_foot_roll}" radius="${radius_foot_joint}">
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <joint name="first_ankle_pitch_joint" type="revolute">
+        <parent link="first_ankle_roll"/>
+        <child link="first_foot"/>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="first_foot">
+        <visual>
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <box size="${foot_thickness} ${foot_width} ${foot_length}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <box size="${foot_thickness} ${foot_width} ${foot_length}"/>
+            </geometry>
+        </collision>
+
+         <xacro:inertial_box mass="${mass_foot}" x="${foot_thickness}" y="${foot_width}" z="${foot_length}">
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+    
+    
+
+
+    
+    
+
+
+
+
+    <!-- Second Arm -->
+
+    <joint name="second_arm_yaw" type="revolute">
+        <parent link="chassis"/>
+        <child link="second_arm_link"/>
+        <origin xyz="${length_body/2} ${-width_body/2} 0" rpy="0 0 ${-pi/4}" />
+        <axis xyz="0 0 1"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="second_arm_link">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_joint}" />
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_joint}" />
+            </geometry>
+        </collision>
+
+        <xacro:inertial_sphere mass="${mass_hip_joint}" radius="${radius_joint}">
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <joint name="second_arm_pitch" type="revolute">
+        <parent link="second_arm_link"/>
+        <child link="second_arm"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="second_arm">
+        <visual>
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_upper_leg}" length="${length_upper_leg}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_upper_leg}" length="${length_upper_leg - 2.2*radius_joint}"/>
+            </geometry>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_upper_leg}" length="${length_upper_leg}" radius="${radius_upper_leg}">
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+
+    <joint name="second_knee_joint" type="revolute">
+        <parent link="second_arm"/>
+        <child link="second_knee"/>
+        <origin xyz="${length_upper_leg} 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="second_knee">
+        <visual>
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_lower_leg}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_lower_leg}"/>
+            </geometry>
+            <material name="green"/>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_lower_leg}" length="${length_lower_leg}" radius="${radius_lower_leg}">
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="second_ankle_yaw_joint" type="revolute">
+        <parent link="second_knee"/>
+        <child link="second_ankle_yaw"/>
+        <origin xyz="${length_lower_leg} 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="1 0 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="second_ankle_yaw">
+        <visual>
+            <origin xyz="${length_foot_yaw/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_foot_yaw}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${0.05/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_foot_yaw}"/>
+            </geometry>
+            <material name="green"/>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_foot_yaw}" length="${length_foot_yaw}" radius="${radius_lower_leg}">
+            <origin xyz="${length_foot_yaw/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    
+    <joint name="second_ankle_roll_joint" type="revolute">
+        <parent link="second_ankle_yaw"/>
+        <child link="second_ankle_roll"/>
+        <origin xyz="${length_foot_yaw + radius_foot_joint} 0 0" rpy="0 0 0" />
+        <axis xyz="0 0 1"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="second_ankle_roll">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_foot_joint}" />
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${0.9 * radius_foot_joint}" />
+            </geometry>
+        </collision>
+
+        <xacro:inertial_sphere mass="${mass_foot_roll}" radius="${radius_foot_joint}">
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <joint name="second_ankle_pitch_joint" type="revolute">
+        <parent link="second_ankle_roll"/>
+        <child link="second_foot"/>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="second_foot">
+        <visual>
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <box size="${foot_thickness} ${foot_width} ${foot_length}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <box size="${foot_thickness} ${foot_width} ${foot_length}"/>
+            </geometry>
+        </collision>
+
+         <xacro:inertial_box mass="${mass_foot}" x="${foot_thickness}" y="${foot_width}" z="${foot_length}">
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+
+
+
+
+
+
+
+
+       <!-- third Arm -->
+
+    <joint name="third_arm_yaw" type="revolute">
+        <parent link="chassis"/>
+        <child link="third_arm_link"/>
+        <origin xyz="${-length_body/2} ${-width_body/2} 0" rpy="0 0 ${-3*pi/4}" />
+        <axis xyz="0 0 1"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="third_arm_link">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_joint}" />
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_joint}" />
+            </geometry>
+        </collision>
+
+        <xacro:inertial_sphere mass="${mass_hip_joint}" radius="${radius_joint}">
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <joint name="third_arm_pitch" type="revolute">
+        <parent link="third_arm_link"/>
+        <child link="third_arm"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="third_arm">
+        <visual>
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_upper_leg}" length="${length_upper_leg}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_upper_leg}" length="${length_upper_leg - 2.2*radius_joint}"/>
+            </geometry>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_upper_leg}" length="${length_upper_leg}" radius="${radius_upper_leg}">
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+
+    <joint name="third_knee_joint" type="revolute">
+        <parent link="third_arm"/>
+        <child link="third_knee"/>
+        <origin xyz="${length_upper_leg} 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="third_knee">
+        <visual>
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_lower_leg}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_lower_leg}"/>
+            </geometry>
+            <material name="green"/>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_lower_leg}" length="${length_lower_leg}" radius="${radius_lower_leg}">
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+
+    <joint name="third_ankle_yaw_joint" type="revolute">
+        <parent link="third_knee"/>
+        <child link="third_ankle_yaw"/>
+        <origin xyz="${length_lower_leg} 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="1 0 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="third_ankle_yaw">
+        <visual>
+            <origin xyz="${length_foot_yaw/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_foot_yaw}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${0.05/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_foot_yaw}"/>
+            </geometry>
+            <material name="green"/>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_foot_yaw}" length="${length_foot_yaw}" radius="${radius_lower_leg}">
+            <origin xyz="${length_foot_yaw/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    
+    <joint name="third_ankle_roll_joint" type="revolute">
+        <parent link="third_ankle_yaw"/>
+        <child link="third_ankle_roll"/>
+        <origin xyz="${length_foot_yaw + radius_foot_joint} 0 0" rpy="0 0 0" />
+        <axis xyz="0 0 1"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="third_ankle_roll">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_foot_joint}" />
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${0.9 * radius_foot_joint}" />
+            </geometry>
+        </collision>
+
+        <xacro:inertial_sphere mass="${mass_foot_roll}" radius="${radius_foot_joint}">
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <joint name="third_ankle_pitch_joint" type="revolute">
+        <parent link="third_ankle_roll"/>
+        <child link="third_foot"/>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="third_foot">
+        <visual>
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <box size="${foot_thickness} ${foot_width} ${foot_length}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <box size="${foot_thickness} ${foot_width} ${foot_length}"/>
+            </geometry>
+        </collision>
+
+         <xacro:inertial_box mass="${mass_foot}" x="${foot_thickness}" y="${foot_width}" z="${foot_length}">
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+
+
+
+
+
+
+
+
+           <!-- fourth Arm -->
+
+    <joint name="fourth_arm_yaw" type="revolute">
+        <parent link="chassis"/>
+        <child link="fourth_arm_link"/>
+        <origin xyz="${-length_body/2} ${width_body/2} 0" rpy="0 0 ${3*pi/4}" />
+        <axis xyz="0 0 1"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="fourth_arm_link">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_joint}" />
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_joint}" />
+            </geometry>
+        </collision>
+
+        <xacro:inertial_sphere mass="${mass_hip_joint}" radius="${radius_joint}">
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <joint name="fourth_arm_pitch" type="revolute">
+        <parent link="fourth_arm_link"/>
+        <child link="fourth_arm"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="fourth_arm">
+        <visual>
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_upper_leg}" length="${length_upper_leg}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_upper_leg}" length="${length_upper_leg - 2.2*radius_joint}"/>
+            </geometry>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_upper_leg}" length="${length_upper_leg}" radius="${radius_upper_leg}">
+            <origin xyz="${length_upper_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+
+    <joint name="fourth_knee_joint" type="revolute">
+        <parent link="fourth_arm"/>
+        <child link="fourth_knee"/>
+        <origin xyz="${length_upper_leg} 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="fourth_knee">
+        <visual>
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_lower_leg}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_lower_leg}"/>
+            </geometry>
+            <material name="green"/>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_lower_leg}" length="${length_lower_leg}" radius="${radius_lower_leg}">
+            <origin xyz="${length_lower_leg/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="fourth_ankle_yaw_joint" type="revolute">
+        <parent link="fourth_knee"/>
+        <child link="fourth_ankle_yaw"/>
+        <origin xyz="${length_lower_leg} 0.0 0.0" rpy="0 0 0" />
+        <axis xyz="1 0 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="fourth_ankle_yaw">
+        <visual>
+            <origin xyz="${length_foot_yaw/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_foot_yaw}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+
+        <collision>
+            <origin xyz="${0.05/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+            <geometry>
+                <cylinder radius="${radius_lower_leg}" length="${length_foot_yaw}"/>
+            </geometry>
+            <material name="green"/>
+        </collision>
+
+        <xacro:inertial_cylinder mass="${mass_foot_yaw}" length="${length_foot_yaw}" radius="${radius_lower_leg}">
+            <origin xyz="${length_foot_yaw/2} 0 0" rpy="${-pi/2} 0 ${pi/2}" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    
+    <joint name="fourth_ankle_roll_joint" type="revolute">
+        <parent link="fourth_ankle_yaw"/>
+        <child link="fourth_ankle_roll"/>
+        <origin xyz="${length_foot_yaw + radius_foot_joint} 0 0" rpy="0 0 0" />
+        <axis xyz="0 0 1"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="fourth_ankle_roll">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${radius_foot_joint}" />
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="${0.9 * radius_foot_joint}" />
+            </geometry>
+        </collision>
+
+        <xacro:inertial_sphere mass="${mass_foot_roll}" radius="${radius_foot_joint}">
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+        </xacro:inertial_sphere>
+    </link>
+
+    <joint name="fourth_ankle_pitch_joint" type="revolute">
+        <parent link="fourth_ankle_roll"/>
+        <child link="fourth_foot"/>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <axis xyz="0 1 0"/>
+        <dynamics damping="${1*joint_damping}" friction="${joint_friction}"/>
+        <limit effort="${joint_effort}" velocity="${joint_velocity}" lower="-3.1" upper="3.1"/>
+    </joint>
+
+    <link name="fourth_foot">
+        <visual>
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <box size="${foot_thickness} ${foot_width} ${foot_length}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <box size="${foot_thickness} ${foot_width} ${foot_length}"/>
+            </geometry>
+        </collision>
+
+         <xacro:inertial_box mass="${mass_foot}" x="${foot_thickness}" y="${foot_width}" z="${foot_length}">
+            <origin xyz="${radius_foot_joint + 0.5 * foot_thickness} 0.0 0.0" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+
+
+
+</robot>
