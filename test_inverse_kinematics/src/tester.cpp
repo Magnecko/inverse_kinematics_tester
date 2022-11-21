@@ -58,12 +58,25 @@ class Tester : public rclcpp::Node
             q_0 = q_pos;
         }
         counter++;
-        message.data = "q_dot: \n";
+        message.data = "q_pos: \n";
         int counter = 0;
         for (int i = 0; i < 18; i++) 
         {
             counter++;
             message.data += std::to_string(q_pos(i)) + "\n";
+            if (counter == 3)
+            {
+                message.data += "\n";
+                counter = 0;
+            }
+        }
+
+        message.data += "q_dot: \n";
+        counter = 0;
+        for (int i = 0; i < 18; i++) 
+        {
+            counter++;
+            message.data += std::to_string(q_dot(i)) + "\n";
             if (counter == 3)
             {
                 message.data += "\n";

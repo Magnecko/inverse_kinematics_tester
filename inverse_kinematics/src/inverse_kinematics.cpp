@@ -143,9 +143,9 @@ Eigen::Matrix4d InverseKinematics::get_transform_IB(Eigen::VectorXd q, const Eig
 Eigen::Matrix3Xd InverseKinematics::joint_to_position_jacobian(Eigen::Vector3d q, Eigen::Vector3d B_r_B1)
 {
     // relative joint vector positions
-    Eigen::Vector3d r_12 = relative_joint_vectors_(Eigen::seq(0,2),0);
-    Eigen::Vector3d r_23 = relative_joint_vectors_(Eigen::seq(0,2),1);
-    Eigen::Vector3d r_34 = relative_joint_vectors_(Eigen::seq(0,2),2);
+    Eigen::Vector3d r_12 = relative_joint_vectors_.block<3,1>(0,0);
+    Eigen::Vector3d r_23 = relative_joint_vectors_.block<3,1>(0,1);
+    Eigen::Vector3d r_34 = relative_joint_vectors_.block<3,1>(0,2);
 
     // compute homogeneous transformation matrices
     Eigen::Matrix4d T_B1 = InverseKinematics::joint_to_transform_B1(q, B_r_B1);
@@ -158,31 +158,36 @@ Eigen::Matrix3Xd InverseKinematics::joint_to_position_jacobian(Eigen::Vector3d q
     Eigen::Matrix4d T_B3 = T_B2 * T_23;
     Eigen::Matrix4d T_B4 = T_B3 * T_34;
     // Rotation matrices 
-    Eigen::Matrix3d R_B1 = T_B1(Eigen::seq(0,2), Eigen::seq(0,2));
-    Eigen::Matrix3d R_B2 = T_B2(Eigen::seq(0,2), Eigen::seq(0,2));
-    Eigen::Matrix3d R_B3 = T_B3(Eigen::seq(0,2), Eigen::seq(0,2));
+    Eigen::Matrix3d R_B1 = T_B1.block<3,3>(0,0);
+    Eigen::Matrix3d R_B2 = T_B2.block<3,3>(0,0);
+    Eigen::Matrix3d R_B3 = T_B3.block<3,3>(0,0);
 
     // positions of joint n w.r.t. frame B
-    Eigen::Vector3d B_r_B2 = T_B2(Eigen::seq(0,2), 3);
-    Eigen::Vector3d B_r_B3 = T_B3(Eigen::seq(0,2), 3);
-    Eigen::Vector3d B_r_B4 = T_B4(Eigen::seq(0,2), 3);
+    Eigen::Vector3d B_r_B2 = T_B2.block<3,1>(0,3);
+    Eigen::Vector3d B_r_B3 = T_B3.block<3,1>(0,3);
+    Eigen::Vector3d B_r_B4 = T_B4.block<3,1>(0,3);
 
     // directions of the rotation axis of joints n w.r.t joint n-1 
     Eigen::Vector3d n_1(0, 0, 1);
     Eigen::Vector3d n_2(0, 1, 0);
     Eigen::Vector3d n_3(0, 1, 0);
 
+    // direction of the rotation axis with respect to B frame
+    Eigen::Vector3d B_n_1 = R_B1*n_1;
+    Eigen::Vector3d B_n_2 = R_B2*n_2;
+    Eigen::Vector3d B_n_3 = R_B3*n_3;
+
     // calculate positional jacobian
     Eigen::Matrix3d B_Jp_Q;
-    Eigen::Vector3d v1 = R_B1 * n_1;
+    Eigen::Vector3d v1 = R_B1 * B_n_1;
     Eigen::Vector3d v2 = B_r_B4 - B_r_B1;
     B_Jp_Q.block<3,1>(0,0) = v1.cross(v2);
 
-    v1 = R_B2 * n_2;
+    v1 = R_B2 * B_n_2;
     v2 = B_r_B4 - B_r_B2;
     B_Jp_Q.block<3,1>(0,1) = v1.cross(v2);
 
-    v1 = R_B3 * n_3;
+    v1 = R_B3 * B_n_3;
     v2 = B_r_B4 - B_r_B3;
     B_Jp_Q.block<3,1>(0,2) = v1.cross(v2);
 
@@ -201,9 +206,7 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
 
     // start configuration
     Eigen::VectorXd q = q_0;
-    
-    // position error of moving foot
-    Eigen::Vector3d dr(0,0,0);
+
     for (int it = 0; it < max_it; it++)
     {
         // Transformation matrix from I to B
@@ -268,8 +271,8 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
 
         // // For the base
         Eigen::Matrix3Xd I_Jp_B = Eigen::Matrix<double, 3, 18>::Zero();
-        I_Jp_B.block<3,15>(0,0) = Eigen::Matrix<double, 3, 15>::Zero();
-        I_Jp_B.block<3,3>(0,15) = Eigen::Matrix3d::Identity();
+        I_Jp_B.block<3,3>(0,0) = Eigen::Matrix3d::Identity();
+        I_Jp_B.block<3,15>(0,3) = Eigen::Matrix<double, 3, 15>::Zero();
         
         Eigen::MatrixXd I_Jp = Eigen::Matrix<double, 12, 18>::Zero();
         I_Jp.block<3,18>(0,0) = I_Jp_FL;
@@ -284,6 +287,7 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
         if (stationary_feet.at(0) == 1)
         {
             I_r_IE = find_base_to_foot_vector(q.segment(0,3), hip_yaw_locations_.block<3,1>(0,0));
+            // std::cout << "I_r_IE: \n" << I_r_IE << std::endl << std::endl;
             dr.head(3) = I_r_IE_des - I_r_IE;
         }
         else if (stationary_feet.at(1) == 1)
@@ -301,16 +305,19 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
             I_r_IE = find_base_to_foot_vector(q.segment(9,3), hip_yaw_locations_.block<3,1>(0,3));
             dr.tail(3) = I_r_IE_des - I_r_IE;
         }
-        std::cout << dr << std::endl;
+        //std::cout << dr << std::endl;
         // Kinematic controller
         // // Controller gain
-        float kp = 1;
+        float kp = 5;
 
         // // Desired end effector velocity of moving leg
         Eigen::VectorXd I_v_IE_des = Eigen::Matrix<double, 12, 1>::Zero();
-
+        
+        // // Desired body velocity
+        Eigen::VectorXd I_v_IB_des = Eigen::Vector3d::Zero();
         // // Pseudo Inverse of I_Jp
         Eigen::MatrixXd I_Jp_pinv = I_Jp.completeOrthogonalDecomposition().pseudoInverse();
+        std::cout << I_Jp_pinv.block<18,3>(0,0) << std::endl;
         // // Null space projection 
         Eigen::MatrixXd N = Eigen::Matrix<double, 18, 18>::Identity() - I_Jp_pinv*I_Jp;
 
@@ -318,8 +325,9 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
         Eigen::VectorXd I_v_command = Eigen::Vector<double, 12>::Zero();
         I_v_command = I_v_IE_des + kp*dr;
         Eigen::MatrixXd temp = I_Jp_B * N;
+        Eigen::MatrixXd temp_pinv = temp.completeOrthogonalDecomposition().pseudoInverse();
 
-        q_dot = I_Jp_pinv * I_v_command + N * temp.completeOrthogonalDecomposition().pseudoInverse() * (-1*I_Jp_B*I_Jp_pinv * I_v_command);
+        q_dot = I_Jp_pinv * I_v_command + N * temp_pinv * (I_Jp_B*I_Jp_pinv * I_v_command);
     }
 
     return q_dot;
