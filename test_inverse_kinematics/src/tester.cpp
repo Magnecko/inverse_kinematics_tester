@@ -32,6 +32,8 @@ class Tester : public rclcpp::Node
     const double distance_between_hip_joints_ = 0;
     Eigen::VectorXd q_pos = Eigen::Vector<double,12>::Zero();
     Eigen::VectorXd q_0 = Eigen::Vector<double,12>::Zero();
+    Eigen::VectorXd I_v_IE_des = Eigen::Vector<double,12>::Zero();
+    Eigen::VectorXd I_v_IB_des_measured = Eigen::Vector<double,3>::Zero();
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
     size_t count_;
@@ -46,7 +48,7 @@ class Tester : public rclcpp::Node
         
         auto message = std_msgs::msg::String();
         
-        Eigen::VectorXd q_dot = IK.inverse_kinematics(q_0, I_r_IE_des, stationary_feet, body_orientation, Eigen::Matrix3d::Zero());
+        Eigen::VectorXd q_dot = IK.inverse_kinematics(q_0, I_r_IE_des, I_v_IE_des, I_v_IB_des_measured,stationary_feet, body_orientation, Eigen::Matrix3d::Zero());
         if (counter < 1000)
         {
             q_pos = q_pos + q_dot.segment(6,12)*0.1;

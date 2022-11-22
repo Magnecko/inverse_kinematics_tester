@@ -194,7 +194,7 @@ Eigen::Matrix3Xd InverseKinematics::joint_to_position_jacobian(Eigen::Vector3d q
     return B_Jp_Q;
 }
 
-Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen::Vector3d I_r_IE_des, const vector<int> stationary_feet, const Eigen::Vector3d body_orientation, Eigen::Matrix3d I_C_IE_des = Eigen::Matrix3d::Zero())
+Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen::Vector3d I_r_IE_des, Eigen::VectorXd I_v_IE_des, Eigen::VectorXd I_v_IB_measured, const vector<int> stationary_feet, const Eigen::Vector3d body_orientation, Eigen::Matrix3d I_C_IE_des = Eigen::Matrix3d::Zero())
 {
     // To silence unused parameter error
     I_C_IE_des = Eigen::Matrix3d::Zero();
@@ -251,7 +251,8 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
         I_Jp_FL.block<3,3>(0,3) = -C_IB*skew_matrix(B_r_BFL);
         I_Jp_FL.block<3,12>(0,6) = C_IB*B_Jp_FL_resized;
 
-        std::cout << I_Jp_FL.block<3,3>(0,3) << std::endl;
+        //std::cout << I_Jp_FL.block<3,3>(0,3) << std::endl << std::endl;
+        std::cout << I_Jp_FL.block<3,12>(0,6) << std::endl << std::endl;
 
         // // For FR
         Eigen::Matrix3Xd I_Jp_FR = Eigen::Matrix<double, 3, 18>::Zero();
@@ -306,16 +307,17 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
             I_r_IE = find_base_to_foot_vector(q.segment(9,3), hip_yaw_locations_.block<3,1>(0,3));
             dr.tail(3) = I_r_IE_des - I_r_IE;
         }
-        
+
         // Kinematic controller
         // // Controller gain
         float kp = 5;
-
+        float kd = 5;
         // // Desired end effector velocity of moving leg
         Eigen::VectorXd I_v_IE_des = Eigen::Matrix<double, 12, 1>::Zero();
         
         // // Desired body velocity
         Eigen::VectorXd I_v_IB_des = Eigen::Vector3d::Zero();
+        I_v_IB_measured = Eigen::Vector<double, 3>::Zero();
 
         // // Pseudo Inverse of I_Jp
         Eigen::MatrixXd I_Jp_pinv = I_Jp.completeOrthogonalDecomposition().pseudoInverse();
@@ -329,7 +331,8 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
         Eigen::MatrixXd temp = I_Jp_B * N;
         Eigen::MatrixXd temp_pinv = temp.completeOrthogonalDecomposition().pseudoInverse();
 
-        q_dot = I_Jp_pinv * I_v_command + N * temp_pinv * (I_v_IB_des - I_Jp_B * I_Jp_pinv * I_v_command);
+        q_dot = I_Jp_pinv * I_v_command + N * temp_pinv * (kd*(I_v_IB_des - I_v_IB_measured) - I_Jp_B * I_Jp_pinv * I_v_command);
+        std::cout << "here" << std::endl;
     }
 
     return q_dot;

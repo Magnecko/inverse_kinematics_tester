@@ -65,5 +65,5 @@ public:
     InverseKinematics(const double body_dimensions[], const double leg_dimensions[][3], const double base_frame_height, const double distance_between_hip_joints);
 
     // compute inverse kinematics for a given leg position
-    Eigen::VectorXd inverse_kinematics(Eigen::VectorXd q_0, Eigen::Vector3d I_r_IE_des, const vector<int> stationary_feet, const Eigen::Vector3d body_orientation, Eigen::Matrix3d I_C_IE_des);
+    Eigen::VectorXd inverse_kinematics(Eigen::VectorXd q_0, Eigen::Vector3d I_r_IE_des, Eigen::VectorXd I_v_IE_des, Eigen::VectorXd I_v_IB_measured, const vector<int> stationary_feet, const Eigen::Vector3d body_orientation, Eigen::Matrix3d I_C_IE_des);
 };
