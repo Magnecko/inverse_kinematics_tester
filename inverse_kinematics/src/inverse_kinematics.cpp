@@ -332,7 +332,6 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
         Eigen::MatrixXd temp_pinv = temp.completeOrthogonalDecomposition().pseudoInverse();
 
         q_dot = I_Jp_pinv * I_v_command + N * temp_pinv * (kd*(I_v_IB_des - I_v_IB_measured) - I_Jp_B * I_Jp_pinv * I_v_command);
-        std::cout << "here" << std::endl;
     }
 
     return q_dot;
