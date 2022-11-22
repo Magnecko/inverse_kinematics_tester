@@ -251,6 +251,8 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
         I_Jp_FL.block<3,3>(0,3) = -C_IB*skew_matrix(B_r_BFL);
         I_Jp_FL.block<3,12>(0,6) = C_IB*B_Jp_FL_resized;
 
+        std::cout << I_Jp_FL.block<3,3>(0,3) << std::endl;
+
         // // For FR
         Eigen::Matrix3Xd I_Jp_FR = Eigen::Matrix<double, 3, 18>::Zero();
         I_Jp_FR.block<3,3>(0,0) = Eigen::Matrix3d::Identity();
@@ -287,7 +289,6 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
         if (stationary_feet.at(0) == 1)
         {
             I_r_IE = find_base_to_foot_vector(q.segment(0,3), hip_yaw_locations_.block<3,1>(0,0));
-            // std::cout << "I_r_IE: \n" << I_r_IE << std::endl << std::endl;
             dr.head(3) = I_r_IE_des - I_r_IE;
         }
         else if (stationary_feet.at(1) == 1)
@@ -305,7 +306,7 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
             I_r_IE = find_base_to_foot_vector(q.segment(9,3), hip_yaw_locations_.block<3,1>(0,3));
             dr.tail(3) = I_r_IE_des - I_r_IE;
         }
-        //std::cout << dr << std::endl;
+        
         // Kinematic controller
         // // Controller gain
         float kp = 5;
@@ -315,6 +316,7 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
         
         // // Desired body velocity
         Eigen::VectorXd I_v_IB_des = Eigen::Vector3d::Zero();
+
         // // Pseudo Inverse of I_Jp
         Eigen::MatrixXd I_Jp_pinv = I_Jp.completeOrthogonalDecomposition().pseudoInverse();
         std::cout << I_Jp_pinv.block<18,3>(0,0) << std::endl;
@@ -327,7 +329,7 @@ Eigen::VectorXd InverseKinematics::inverse_kinematics(Eigen::VectorXd q_0, Eigen
         Eigen::MatrixXd temp = I_Jp_B * N;
         Eigen::MatrixXd temp_pinv = temp.completeOrthogonalDecomposition().pseudoInverse();
 
-        q_dot = I_Jp_pinv * I_v_command + N * temp_pinv * (I_Jp_B*I_Jp_pinv * I_v_command);
+        q_dot = I_Jp_pinv * I_v_command + N * temp_pinv * (I_v_IB_des - I_Jp_B * I_Jp_pinv * I_v_command);
     }
 
     return q_dot;

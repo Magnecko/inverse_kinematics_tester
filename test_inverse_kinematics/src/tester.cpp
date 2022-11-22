@@ -30,8 +30,8 @@ class Tester : public rclcpp::Node
     };
     const double base_frame_height_ = 0.5;
     const double distance_between_hip_joints_ = 0;
-    Eigen::VectorXd q_pos = Eigen::Vector<double,18>::Zero();
-    Eigen::VectorXd q_0 = Eigen::Vector<double,18>::Zero();
+    Eigen::VectorXd q_pos = Eigen::Vector<double,12>::Zero();
+    Eigen::VectorXd q_0 = Eigen::Vector<double,12>::Zero();
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
     size_t count_;
@@ -49,8 +49,8 @@ class Tester : public rclcpp::Node
         Eigen::VectorXd q_dot = IK.inverse_kinematics(q_0, I_r_IE_des, stationary_feet, body_orientation, Eigen::Matrix3d::Zero());
         if (counter < 1000)
         {
-            q_pos = q_pos + q_dot*0.1;
-                //Normalize the angles to their limits
+            q_pos = q_pos + q_dot.segment(6,12)*0.1;
+            //Normalize the angles to their limits
             for(auto &i : q_pos){
                 int n = int(abs(i)/2/PI + 0.5);
                 i > 0 ? i -= n*2*PI: i += n*2*PI;
@@ -60,7 +60,7 @@ class Tester : public rclcpp::Node
         counter++;
         message.data = "q_pos: \n";
         int counter = 0;
-        for (int i = 0; i < 18; i++) 
+        for (int i = 0; i < 12; i++) 
         {
             counter++;
             message.data += std::to_string(q_pos(i)) + "\n";
